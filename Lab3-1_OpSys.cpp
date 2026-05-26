@@ -18,7 +18,7 @@ struct ThreadData {
     bool terminate;
 };
 
-// Функция, которую выполняет каждый поток
+// Р¤СѓРЅРєС†РёСЏ, РєРѕС‚РѕСЂСѓСЋ РІС‹РїРѕР»РЅСЏРµС‚ РєР°Р¶РґС‹Р№ РїРѕС‚РѕРє
 DWORD WINAPI ThreadProc(LPVOID lpParam) {
     ThreadData* data = (ThreadData*)lpParam;
 
@@ -31,11 +31,11 @@ DWORD WINAPI ThreadProc(LPVOID lpParam) {
             local_sum += 4.0 / (1.0 + x * x);
         }
 
-        // Вход в критическую секцию
+        // Р’С…РѕРґ РІ РєСЂРёС‚РёС‡РµСЃРєСѓСЋ СЃРµРєС†РёСЋ
         EnterCriticalSection(&cs);
-        total_pi += local_sum; // Безопасно прибавляем к общей переменной
+        total_pi += local_sum; // Р‘РµР·РѕРїР°СЃРЅРѕ РїСЂРёР±Р°РІР»СЏРµРј Рє РѕР±С‰РµР№ РїРµСЂРµРјРµРЅРЅРѕР№
         LeaveCriticalSection(&cs);
-        // Выход
+        // Р’С‹С…РѕРґ
 
         data->is_busy = false;
         SuspendThread(GetCurrentThread());
@@ -70,7 +70,7 @@ int main() {
                 task_assigned = true;
             }
         }
-        if (!task_assigned) Sleep(1); // без этого программа выполняется ооочень долго
+        if (!task_assigned) Sleep(1); // Р±РµР· СЌС‚РѕРіРѕ РїСЂРѕРіСЂР°РјРјР° РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РѕРѕРѕС‡РµРЅСЊ РґРѕР»РіРѕ
     }
 
     bool working = true;
@@ -98,7 +98,7 @@ int main() {
             "\nThreads: " << num_threads << 
             "\nTime: " << (end_time - start_time) << " ms" << endl;
 
-    // закрытие дескрипторов потоков, чтобы не утекала память
+    // Р·Р°РєСЂС‹С‚РёРµ РґРµСЃРєСЂРёРїС‚РѕСЂРѕРІ РїРѕС‚РѕРєРѕРІ, С‡С‚РѕР±С‹ РЅРµ СѓС‚РµРєР°Р»Р° РїР°РјСЏС‚СЊ
     for (int i = 0; i < num_threads; ++i) CloseHandle(hThreads[i]);
     DeleteCriticalSection(&cs);
 
