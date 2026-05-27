@@ -18,8 +18,8 @@ int main() {
 #pragma omp parallel
     {
         double thread_local_sum = 0.0;
-
-#pragma omp for schedule(dynamic, BLOCK_SIZE)
+// динамическое планирование
+#pragma omp for schedule(dynamic, BLOCK_SIZE) 
         for (long long i = 0; i < N; ++i) {
             double x = (i + 0.5) / (double)N;
             thread_local_sum += 4.0 / (1.0 + x * x);
