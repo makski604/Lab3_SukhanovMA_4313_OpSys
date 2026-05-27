@@ -33,7 +33,7 @@ DWORD WINAPI ThreadProc(LPVOID lpParam) {
 
         // Вход в критическую секцию
         EnterCriticalSection(&cs);
-        total_pi += local_sum; // атомарно увеличиваем счётчик
+        total_pi += local_sum; // безопасно увлеичиваем счётчик
         LeaveCriticalSection(&cs);
         // Выход
 
