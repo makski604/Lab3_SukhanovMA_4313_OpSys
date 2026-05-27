@@ -12,10 +12,10 @@ double total_pi = 0.0;
 CRITICAL_SECTION cs;
 
 struct ThreadData {
-    long long start_i;
-    long long end_i;
-    bool is_busy;
-    bool terminate;
+    long long start_i; // от скольки
+    long long end_i; // до сколько итераций
+    bool is_busy; // занятость потока
+    bool terminate; // завершенность потока
 };
 
 // Функция, которую выполняет каждый поток
@@ -23,7 +23,7 @@ DWORD WINAPI ThreadProc(LPVOID lpParam) {
     ThreadData* data = (ThreadData*)lpParam;
 
     while (true) {
-        if (data->terminate) break;
+        if (data->terminate) break; // если поток завершен, выходим из цикла
 
         double local_sum = 0.0;
         for (long long i = data->start_i; i < data->end_i; ++i) {
@@ -37,20 +37,20 @@ DWORD WINAPI ThreadProc(LPVOID lpParam) {
         LeaveCriticalSection(&cs);
         // Выход
 
-        data->is_busy = false;
-        SuspendThread(GetCurrentThread());
+        data->is_busy = false; // поток больше не занят
+        SuspendThread(GetCurrentThread()); // приостанавливаем его
     }
     return 0;
 }
 
 int main() {
     int num_threads = 16; // 1, 2, 4, 8, 12, 16
-    InitializeCriticalSection(&cs);
+    InitializeCriticalSection(&cs); // инициализируем крит секцию
 
-    vector<HANDLE> hThreads(num_threads);
-    vector<ThreadData> td(num_threads);
+    vector<HANDLE> hThreads(num_threads); // вектор потоков
+    vector<ThreadData> td(num_threads); // вектор структур потоков
 
-    ULONGLONG start_time = GetTickCount64();
+    ULONGLONG start_time = GetTickCount64(); // засекаем время
     for (int i = 0; i < num_threads; ++i) {
         td[i].is_busy = false;
         td[i].terminate = false;
@@ -58,8 +58,8 @@ int main() {
     }
 
     long long current_i = 0;
-    while (current_i < N) {
-        bool task_assigned = false;
+    while (current_i < N) { // распределеы ли все итерации?
+        bool task_assigned = false; // все ли потоки заняты ? (false - да)
         for (int i = 0; i < num_threads && current_i < N; ++i) {
             if (!td[i].is_busy) {
                 td[i].start_i = current_i;
@@ -67,29 +67,30 @@ int main() {
                 td[i].is_busy = true;
                 ResumeThread(hThreads[i]);
                 current_i = td[i].end_i;
-                task_assigned = true;
+                task_assigned = true; // потоку выдана задача
             }
         }
         if (!task_assigned) Sleep(1); // без этого программа выполняется ооочень долго
     }
 
     bool working = true;
-    while (working) {
+    while (working) { // ждем довыполнения задача потоками
         working = false;
         for (int i = 0; i < num_threads; i++) {
-            if (td[i].is_busy) {
-                working = true;
+            if (td[i].is_busy) { // если хотя бы один поток занят, 
+                working = true; // то работа еще идет
                 break;
             }
         }
-        if (working) Sleep(1);
+        if (working) Sleep(1); // если работа идет, то ждем, чтобы не
+                              // грузить процессор провреками
     }
-
+    // после завершения работы устанавливаем потокам флаг завершения
     for (int i = 0; i < num_threads; i++) {
-        td[i].terminate = true;
-        ResumeThread(hThreads[i]);
+        td[i].terminate = true; 
+        ResumeThread(hThreads[i]); // возобновляем выполнение потока, чтобы он вышел из цикла
     }
-    WaitForMultipleObjects(num_threads, hThreads.data(), TRUE, INFINITE);
+    WaitForMultipleObjects(num_threads, hThreads.data(), TRUE, INFINITE); // ждем полного завершения потков
 
     total_pi *= (1.0 / N);
     ULONGLONG end_time = GetTickCount64();
